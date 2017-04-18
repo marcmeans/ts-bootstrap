@@ -35,7 +35,7 @@ export class BaseRouter {
 			url: cfg.url,
 			service: cfg.service,
 			method: cfg.method,
-			TSBhema: {}
+			schema: {}
 		});
 		await this.wireTimer(cfg);
 	}
@@ -75,14 +75,14 @@ export class BaseRouter {
 				}
 
 				// model
-				req._TSBhema = cfg.TSBhema;
+				req._schema = cfg.schema;
 				let joiOptions = {
 					context: req,
 					allowUnknown: true,
 					abortEarly: false
 				};
 
-				let { error, value } = Joi.validate(req._model, req._TSBhema, joiOptions);
+				let { error, value } = Joi.validate(req._model, req._schema, joiOptions);
 				if (!error || error.details.length === 0) {
 					logger.log(oid, LogLevel.debug, 'received http event', req._model);
 					req._model = value;
@@ -128,7 +128,7 @@ export class BaseRouter {
 			q.activateConsumer(async (message: amqp.Message) => {
 				try {
 					let model;
-					let TSBhema = cfg.TSBhema;
+					let schema = cfg.schema;
 					model = message.getContent();
 					if (cfg.novalidate === true) {
 						await cfg.service[cfg.method](model);
@@ -147,7 +147,7 @@ export class BaseRouter {
 							allowUnknown: true,
 							abortEarly: false
 						};
-						let { error, value } = Joi.validate(model, TSBhema, joiOptions);
+						let { error, value } = Joi.validate(model, schema, joiOptions);
 						if (!error || error.details.length === 0) {
 							logger.log(model.header.originatorId, LogLevel.trace, 'recieved event', model);
 							await cfg.service[cfg.method](model);
@@ -192,7 +192,7 @@ export interface ITSBRoute {
 	url: string;
 	service: {};
 	method: string;
-	TSBhema: {};
+	schema: {};
 	permits?: string[];
 	novalidate?: boolean;
 }
@@ -212,6 +212,6 @@ export interface ITSBRabbitRoute {
 	queue: string;
 	key: string;
 	exclusiveQueue?: boolean;
-	TSBhema: {};
+	schema: {};
 	novalidate?: boolean;
 }

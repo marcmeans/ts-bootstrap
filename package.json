@@ -1,6 +1,6 @@
 {
   "name": "ts-bootstrap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provides infrastructure for api projects",
   "main": "dist/index.js",
   "scripts": {
