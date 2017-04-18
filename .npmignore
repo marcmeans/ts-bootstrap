@@ -1,0 +1,8 @@
+src
+gulpfile.js
+.gitignore
+.npmignore
+*.tgz
+tsconfig.json
+typings.json
+.vscode

@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"noImplicitAny": false,
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"mapRoot": ".",
+		"target": "es6",
+		"diagnostics": false,
+		"listFiles": false,
+		"outDir": "dist/",
+		"declaration": true,
+		"types": ["mocha"]
+	},
+	"files": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"./build"
+	]
+}
