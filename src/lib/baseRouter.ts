@@ -52,11 +52,6 @@ export class BaseRouter {
 				if (auth) {
 					req._model._authorization = auth;
 				}
-
-				oid = req.header('originatorId') || req.body.header.originatorId;
-				req._model = req._model || {};
-				req._model.header = req._model.header || { originatorId: oid };
-
 				// permits
 				if (cfg.permits) {
 					// logger.log(oid, LogLevel.trace, 'token started');
@@ -133,15 +128,6 @@ export class BaseRouter {
 					if (cfg.novalidate === true) {
 						await cfg.service[cfg.method](model);
 					} else {
-						if (process.env.TSB_REQUEST_INITIATOR === 'true') {
-							model = model || {};
-							model.header = model.header || { originatorId: Guid.new() };
-						} else {
-							if (!model.header.originatorId) {
-								throw 'This api must be called with a originatorId already generated.';
-							}
-						}
-
 						let joiOptions = {
 							context: model,
 							allowUnknown: true,
