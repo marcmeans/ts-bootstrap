@@ -13,18 +13,23 @@ import { TSBException } from './exception';
 
 export class ApplicationFactory {
 
-	// ref to Express instance
+	/**
+	 * ref to Express instance
+	 */
 	public express: express.Application;
 
-	// Run configuration methods on the Express instance.
+	/**
+	 * Run configuration methods on the Express instance.
+	 */
 	constructor(builder: any) {
 		this.express = express();
 		this.middleware();
 		this.routes(builder);
-		this.exceptionHandling();
 	}
 
-	// Configure Express middleware.
+	/**
+	 * Configure Express middleware
+	 */
 	private middleware(): void {
 		this.express.use(compression());
 		this.express.use(bodyParser.urlencoded({ extended: false }));
@@ -33,18 +38,15 @@ export class ApplicationFactory {
 		this.express.use(methodOverride());
 		this.express.use(cookieParser());
 		let serveDir = process.env.TSB_STATIC_DIR ? process.env.TSB_STATIC_DIR : `./public`;
-		this.express.use(process.env.SERVICE_PATH , express.static(serveDir));
+		this.express.use(process.env.SERVICE_PATH, express.static(serveDir));
 	}
 
-	// Configure API endpoints.
-	private routes(builder: any): void {
+	/**
+	 * Configure api routes
+	 */
+	private routes(builder: { bootstrap: Function, AppRouter: any }): void {
 		builder.bootstrap();
 		this.express.use('/', builder.AppRouter);
-	}
-
-	// Configure global error handling
-	private exceptionHandling(): void {
-		// this.express.use(errorHandler);
 	}
 
 }

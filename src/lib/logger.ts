@@ -2,7 +2,7 @@ import * as fs from 'fs';
 
 export interface ILogger {
 	logName: string;
-	log(originatorId: string, level: LogLevel, message: string, detail?: {}): void; // tslint:disable-line:no-any
+	log(level: LogLevel, message: string, detail?: {}): void; // tslint:disable-line:no-any
 }
 
 export class Logger implements ILogger {
@@ -18,6 +18,9 @@ export class Logger implements ILogger {
 
 	private _currentLevel: number = 30;
 
+	/**
+	 * @param logName to identify the application
+	 */
 	constructor(public logName: string) {
 
 		switch (process.env.TSB_LOGGING_LEVEL) {
@@ -46,7 +49,13 @@ export class Logger implements ILogger {
 		console.log(`Initialized ${logName} logger at level: ${LogLevel[this._currentLevel]}`); // tslint:disable-line:no-console
 	}
 
-	public log(originatorId: string, level: LogLevel, message: string, detail?: any): void { // tslint:disable-line:no-any
+	/**
+	 *
+	 * @param level used for severity
+	 * @param message string message to display in log
+	 * @param detail object used for tracking details in the log
+	 */
+	public log(level: LogLevel, message: string, detail?: any): void { // tslint:disable-line:no-any
 		if (this._currentLevel < level) {
 			return;
 		} else {
@@ -57,7 +66,7 @@ export class Logger implements ILogger {
 				plainObject = detail;
 			}
 			let pretty = process.env.NODE_ENV === 'LOCAL' ? '\t' : undefined;
-			let formattedMessage = JSON.stringify({ severity: LogLevel[level], originatorId, message, detail: plainObject }, null, pretty);
+			let formattedMessage = JSON.stringify({ severity: LogLevel[level], message, detail: plainObject }, null, pretty);
 			console.log(formattedMessage); // tslint:disable-line:no-console
 		}
 	}

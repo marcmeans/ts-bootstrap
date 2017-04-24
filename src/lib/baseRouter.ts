@@ -12,7 +12,7 @@ import * as uuid from 'uuid';
 import { basePublisher } from './basePublisher';
 import { RabbitConfig } from './baseRabbit';
 import { TSBException } from './exception';
-import { Guid } from './guid';
+import { Uuid } from './guid';
 import { logger, LogLevel } from './logger';
 import { validation } from './validation';
 
@@ -21,14 +21,26 @@ export class BaseRouter {
 	public AppRouter: Router = Router();
 	private _queues: amqp.Queue[] = [];
 
+	/**
+	 * Adds an express route
+	 * @param config - Express based route configuration
+	 */
 	public async addRoute(cfg: ITSBRoute): Promise<void> {
 		await this.wireExpress(cfg);
 	}
 
+	/**
+	 * Adds an amqp subscription
+	 * @param cfg RabbitMQ based route configuration
+	 */
 	public async addRabbit(cfg: ITSBRabbitRoute): Promise<void> {
 		await this.wireRabbit(cfg);
 	}
 
+	/**
+	 * Adds a timer based event
+	 * @param cfg Timer based route configuration
+	 */
 	public async addTimer(cfg: ITSBTimer): Promise<void> {
 		await this.wireExpress({
 			verb: cfg.verb,
@@ -52,6 +64,7 @@ export class BaseRouter {
 				if (auth) {
 					req._model._authorization = auth;
 				}
+
 				// permits
 				if (cfg.permits) {
 					// logger.log(oid, LogLevel.trace, 'token started');
@@ -79,7 +92,7 @@ export class BaseRouter {
 
 				let { error, value } = Joi.validate(req._model, req._schema, joiOptions);
 				if (!error || error.details.length === 0) {
-					logger.log(oid, LogLevel.debug, 'received http event', req._model);
+					logger.log(LogLevel.debug, 'received http event', req._model);
 					req._model = value;
 				} else {
 					let translatedErrors = [];
@@ -89,18 +102,18 @@ export class BaseRouter {
 							messages: [err.message]
 						});
 					});
-					logger.log(oid, LogLevel.error, 'joi validation error', translatedErrors);
+					logger.log(LogLevel.error, 'joi validation error', translatedErrors);
 					res.status(400).send({ message: 'Bad Request', errors: translatedErrors });
 					return;
 				}
 
 				// service
 				let result = await cfg.service[cfg.method](req._model);
-				logger.log(oid, LogLevel.info, 'response data', typeof result === 'object' ? result : { _result: result });
+				logger.log(LogLevel.info, 'response data', typeof result === 'object' ? result : { _result: result });
 				res.status(200).send(result);
 				return;
 			} catch (err) {
-				logger.log(oid, LogLevel.error, err.name, err);
+				logger.log(LogLevel.error, err.name, err);
 				res.status(err.status || 500).send(err);
 				return;
 			}
@@ -128,6 +141,7 @@ export class BaseRouter {
 					if (cfg.novalidate === true) {
 						await cfg.service[cfg.method](model);
 					} else {
+
 						let joiOptions = {
 							context: model,
 							allowUnknown: true,
@@ -135,15 +149,15 @@ export class BaseRouter {
 						};
 						let { error, value } = Joi.validate(model, schema, joiOptions);
 						if (!error || error.details.length === 0) {
-							logger.log(model.header.originatorId, LogLevel.trace, 'recieved event', model);
+							logger.log(LogLevel.trace, 'recieved event', model);
 							await cfg.service[cfg.method](model);
 						} else {
-							logger.log(model.header.originatorId, LogLevel.error, 'joi validation error', error);
+							logger.log(LogLevel.error, 'joi validation error', error);
 						}
 					}
 					message.ack();
 				} catch (err) {
-					logger.log(err.originatorId, LogLevel.error, err.name, err);
+					logger.log(LogLevel.error, err.name, err);
 					if (err.name && err.name === 'TSBDependencyException') {
 						message.nack();
 					}
@@ -154,19 +168,19 @@ export class BaseRouter {
 			});
 			this._queues.push(q);
 		} catch (err) {
-			logger.log(err.originatorId, LogLevel.error, err.name, err);
+			logger.log(LogLevel.error, err.name, err);
 		}
 	}
 
 	private async wireTimer(cfg: ITSBTimer): Promise<void> {
 		setInterval(async () => {
 			try {
-				let model = { header: { originatorId: Guid.new() } };
-				logger.log(model.header.originatorId, LogLevel.trace, `Timer for '${cfg.url}' fired`);
+				let model = { header: { originatorId: Uuid.new() } };
+				logger.log(LogLevel.trace, `Timer for '${cfg.url}' fired`);
 				let result = await cfg.service[cfg.method](model);
-				logger.log(model.header.originatorId, LogLevel.info, 'response data', typeof result === 'object' ? result : { _result: result });
+				logger.log(LogLevel.info, 'response data', typeof result === 'object' ? result : { _result: result });
 			} catch (err) {
-				logger.log(err.originatorId, LogLevel.error, err.name, err);
+				logger.log(LogLevel.error, err.name, err);
 			}
 		}, cfg.interval);
 	}
