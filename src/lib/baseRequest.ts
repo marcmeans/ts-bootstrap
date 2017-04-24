@@ -3,13 +3,16 @@ import * as request from 'request-promise';
 
 export class WebRequest {
 
-	public headers: {};
 	public json: boolean = true;
+
+	/**
+	 * Shortcut for creating a web request object
+	 * @param url for endpoint
+	 * @param body to send on PUT/POST
+	 */
 	constructor(
 		public url: string,
-		public body: any, // tslint:disable-line:no-any
-		private baseEvent: any) { // tslint:disable-line:no-any
-		this.headers = { 'originatorId': baseEvent.header.originatorId }; // tslint:disable-line:object-literal-key-quotes
-	}
+		public body: any) { // tslint:disable-line:no-any
+		}
 
 }
